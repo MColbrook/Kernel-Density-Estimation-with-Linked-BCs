@@ -7,7 +7,7 @@ D=ceil(D*m);
 D=LT(D);  % LT stores inverse of cdf - D can be any input data
 % r=1.7604;
 x=0:0.001:1; % Points at which we approximate PDF
-PLOT = 'TRUE';
+PLOT = 1;
 
 % % compute stopping time via kde code from reference [3]
 % [bandwidth,~,~,~]=kde(D,10*n,0,1);

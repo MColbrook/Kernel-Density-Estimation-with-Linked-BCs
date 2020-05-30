@@ -1,4 +1,4 @@
-function [SOL] = Discrete_linked(D,m,T,r,PLOT)
+function [SOL2] = Discrete_linked(D,m,T,r,PLT)
 %% Applies the discrete model given a finite number of samples D and r
 
 % D vector of sample
@@ -6,7 +6,7 @@ function [SOL] = Discrete_linked(D,m,T,r,PLOT)
 % T stopping time
 % r parameter linking the BCs
 % x values at which we wish to evaluate the solution
-% PLOT option to plot the initial data and solution, takes values TRUE/FALSE
+% PLT option to plot the initial data and solution, takes values 1/0
 
 %%% ASSUMES pronbability distribution - makes sure samples appropriately
 %%% scaled.
@@ -38,15 +38,28 @@ data = dataExtended(2:end-1);
 
 %% set up the Four Corners Matrix
 tic
-M = gallery('tridiag',m,-1,2,-1);
-M = full(M);
-M(1,1) = M(1,1) + gamma; 
-M(1,m) = M(1,m) + alpha;
-M(m,1) = M(m,1) + beta;
-M(m,m) = M(m,m) + delta;
+B = gallery('tridiag',m,-1,2,-1);
+% vectors for Sherman–Morrison formula
+u=sparse(m,1); v=u;
+u(1)=gamma; u(end)=beta;
+v(1)=1; v(end)=1;
 
-%% Solve by simply computing the matrix exponential.
-p = expm(-T * (1/2) * M / h^2)*data;
+%% Solve by backwards Euler and Sherman–Morrison formula
+
+K=ceil(T/(2*h^2));
+Delta_t=T/K;
+p2=data;
+
+B=speye(m,m)+Delta_t*B/(2*h^2);
+v=Delta_t*v/(2*h^2);
+
+U=B\u;
+
+for j=1:K
+    ZZ=B\p2;
+    p2=ZZ-U*(transpose(v)*ZZ)/(1+transpose(v)*U);
+end
+
 
 %% Extend the solution to the two `ghost nodes' at 0 and at n+1. 
 % Define S == (y(node 1) + y(node n)).
@@ -55,12 +68,15 @@ p = expm(-T * (1/2) * M / h^2)*data;
 % node n+1 value: to be  1/(r+1) of S
 % so of course the exact ratio of the left boundary value 
 % to the right boundary value is always r, as desired.
-S = (p(1) + p(m));
-SOL = [S*(-alpha)
-             p;
-             S*(-beta)]; 
+
+S2 = (p2(1) + p2(m));
+SOL2 = [S2*(-alpha)
+             p2;
+             S2*(-beta)];
+
+
 %% Plot the solution, i.e. the estimated density
-if PLOT=='TRUE'
+if PLT==1
     figure
     LW = 'LineWidth';
     FS = 'FontSize';

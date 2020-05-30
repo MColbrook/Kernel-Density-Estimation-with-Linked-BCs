@@ -5,7 +5,7 @@ function [SOL] = Cts_samples(D,T,r,x,PLOT)
 % T stopping time
 % r parameter linking the BCs
 % x values at which we wish to evaluate the solution
-% PLOT option to plot the initial data and solution, takes values TRUE/FALSE
+% PLOT option to plot the initial data and solution, takes values 1/0
 
 N=max(20,ceil(sqrt( 8*log(10)/(pi^2*T) ))); % sum N+1 terms
 
@@ -23,7 +23,7 @@ end
 
 SOL=solution_k(x,T,r,C0,S0,S1,N);
 
-if PLOT=='TRUE'
+if PLOT==1
     D=D(:);
     m=100; % default, can change according to histogram binning
     dx=1/m; N=length(unique(D));
